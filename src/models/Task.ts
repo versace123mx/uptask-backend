@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
+import Note from "./Notes";
 
 const taskStatus = {
     PENDING: 'pending',
@@ -65,6 +66,17 @@ export const TaskSchema: Schema = new Schema({
         }
     ]
 }, {timestamps: true})
+
+//Middleware
+//Vamos a eliminar las notas que pertenecen a una tarea, se puede hacer desde el controlador
+//pero dice Juan que el controlador queda mas cargado, entonces para eliminar desde el modelo
+//se ejecuta un middleware, que cuando se elimine una tarea, se eliminen sus notas
+TaskSchema.pre('deleteOne',{document:true}, async function() {
+    
+    const taskId = this._id
+    if(!taskId) return
+    await Note.deleteMany({task:taskId})
+})
 
 const Task = mongoose.model<ITask>('Task', TaskSchema)
 export default Task
